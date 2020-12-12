@@ -81,7 +81,6 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 				String date = Window.listForContracts.getSelectedValue().toString();
 				String personRegister = (employeisSelect) ? date.substring(date.indexOf("CPF:") + 5)
 						: date.substring(date.indexOf("CNPJ:") + 6);
-
 				if (DataBase.getConnection()) {
 					String contracts = "";
 					DataBase.setResultSet(sql);
@@ -106,18 +105,21 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 						}
 
 						try {
-							Date start = sdf.parse(startDate);
-							Date end = sdf.parse(endDate);
-							if (end.compareTo(start) <= 0) {
-								JOptionPane.showMessageDialog(this,
-										"A data de início do contrato não pode ser posterior à data de fim",
-										"Erro de processamento", JOptionPane.ERROR_MESSAGE);
-								return;
+							Date start;
+							Date end;
+							if (!endDate.equals("")) {
+								start = sdf.parse(startDate);
+								end = sdf.parse(endDate);
+								if (end.compareTo(start) <= 0) {
+									JOptionPane.showMessageDialog(this,
+											"A data de início do contrato não pode ser posterior à data de fim",
+											"Erro de processamento", JOptionPane.ERROR_MESSAGE);
+									return;
+								}
 							}
+
 						} catch (ParseException e) {
-							JOptionPane.showMessageDialog(this, "Indique as datas no formato DD/MM/AAAA",
-									"Erro de processamento", JOptionPane.ERROR_MESSAGE);
-							return;
+							e.printStackTrace();
 						}
 
 						String salary = String.format("%.2f",
@@ -306,7 +308,8 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 						: Window.cellPhoneEmployeeField.getText().trim();
 				String address = Window.adrressEmployeeField.getText().trim().toUpperCase();
 
-				if (name.equals("") || (landline.equals("") && cellPhone.equals("")) || address.equals("")) {
+				if (name.equals("") || (landline.equals("") && cellPhone.equals("")) || address.equals("")
+						|| birth.equals("")) {
 					JOptionPane.showMessageDialog(this, "Há campos obrigatórios vazios!\n"
 							+ "O nome, cpf, nascimento, sexo, endereço e um telefone de contato são obrigatórios!",
 							"Erro de processamento", JOptionPane.ERROR_MESSAGE);
@@ -455,6 +458,8 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 	}
 
 	private boolean verifyDateFormat(String birth) {
+		if (birth.length() == 0)
+			return true;
 		if (birth.charAt(2) != '/' || birth.charAt(5) != '/' || birth.length() != 10)
 			return false;
 		try {
