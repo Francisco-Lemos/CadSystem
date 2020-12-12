@@ -99,6 +99,12 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 						String startDate = Window.startDateContractEmployeeField.getText().trim();
 						String endDate = Window.endDateContractEmployeeField.getText().trim();
 
+						if (!verifyDateFormat(startDate) || !verifyDateFormat(endDate)) {
+							JOptionPane.showMessageDialog(this, "Formato de data inválido!\nUse o formato DD/MM/AAAA",
+									"Erro de processamento", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+
 						try {
 							Date start = sdf.parse(startDate);
 							Date end = sdf.parse(endDate);
@@ -113,14 +119,14 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 									"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
+
 						String salary = String.format("%.2f",
 								Double.parseDouble((!Window.salaryEmployeeField.getText().trim().equals(""))
 										? Window.salaryEmployeeField.getText().trim().replace(',', '.')
 										: "0"));
 						String department = Window.departmentEmployeeField.getText().trim();
 						if (department.equals("") || startDate.equals("") || salary.equals("") || function.equals("")) {
-							JOptionPane.showMessageDialog(this,
-									"Há campos obrigatórios vazios!",
+							JOptionPane.showMessageDialog(this, "Há campos obrigatórios vazios!",
 									"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
@@ -141,8 +147,7 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 										? Window.amountPaymentContractField.getText().trim().replace(',', '.')
 										: "0"));
 						if (object.equals("") || startDate.equals("") || signal.equals("0") || amount.equals("0")) {
-							JOptionPane.showMessageDialog(this,
-									"Há campos obrigatórios vazios!",
+							JOptionPane.showMessageDialog(this, "Há campos obrigatórios vazios!",
 									"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
@@ -190,6 +195,7 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 							Window.cellPhoneEmployeeField.setText(DataBase.resultSet.getString("cellPhone"));
 							Window.emailEmployeeField.setText(DataBase.resultSet.getString("email"));
 							Window.adrressEmployeeField.setText(DataBase.resultSet.getString("address"));
+							gender = DataBase.resultSet.getString("gender");
 						} else if (Window.providerConsultRadio.isSelected()) {
 							Window.providerNameField.setText(DataBase.resultSet.getString("name"));
 							Window.cnpjTextField.setText(DataBase.resultSet.getString("cnpj"));
@@ -238,9 +244,10 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 					} else {
 						return;
 					}
+					System.out.println(date);
 					int option = JOptionPane.showConfirmDialog(this,
 							"Deseja EXCLUIR o " + person.toLowerCase() + " "
-									+ date.substring(0, date.indexOf("-CPF:") - 1) + "?",
+									+ date.substring(0, date.indexOf("CPF:") - 3) + "?",
 							"Exclusão de dados", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 					if (option == 1 || option == -1)
 						return;
@@ -267,11 +274,10 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 				String name = Window.nameEmployeeField.getText().trim().toUpperCase();
 				String protoCpf = Window.cpfEmployeeField.getText().trim().toUpperCase();
 				String birth = Window.birthEmployeeField.getText().trim().toUpperCase();
-				try {
-					sdf.parse(birth);
-				} catch (ParseException e1) {
-					JOptionPane.showMessageDialog(this, "Data de nascimento inválida!", "Erro de processamento",
-							JOptionPane.ERROR_MESSAGE);
+
+				if (!verifyDateFormat(birth)) {
+					JOptionPane.showMessageDialog(this, "Formato de data inválido!\nUse o formato DD/MM/AAAA",
+							"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				try {
@@ -300,14 +306,13 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 						: Window.cellPhoneEmployeeField.getText().trim();
 				String address = Window.adrressEmployeeField.getText().trim().toUpperCase();
 
-				if (name.equals("") ||( landline.equals("") || cellPhone.equals("")) || address.equals("")) {
-					JOptionPane.showMessageDialog(this,
-							"Há campos obrigatórios vazios!\n"
+				if (name.equals("") || (landline.equals("") && cellPhone.equals("")) || address.equals("")) {
+					JOptionPane.showMessageDialog(this, "Há campos obrigatórios vazios!\n"
 							+ "O nome, cpf, nascimento, sexo, endereço e um telefone de contato são obrigatórios!",
 							"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				
+
 				if (!DataBase.getConnection()) {
 					JOptionPane.showMessageDialog(this,
 							"Falha na conexão com o banco de dados!\nOperação não realizada.", "Exclusão de dados",
@@ -325,7 +330,8 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(this, "Comando não realizado!\nTente reiniciar a aplicação",
+							"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 				}
 				if (!id.equals("")) {
 					sql = "UPDATE `employee` SET `name`='" + name + "',`cpf`='" + cpf + "',`birth`='" + birth
@@ -388,14 +394,15 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 				String email = Window.emailProviderField.getText().trim();
 				String address = Window.providerAdrressField.getText().trim().toUpperCase();
 
-				if (name.equals("") ||( landline.equals("") || cellPhone.equals("")) || address.equals("") || classification.equals("")) {
+				if (name.equals("") || (landline.equals("") && cellPhone.equals("")) || address.equals("")
+						|| classification.equals("")) {
 					JOptionPane.showMessageDialog(this,
 							"Há campos obrigatórios vazios!\n"
-							+ "O nome, cnpj, classificação, endereço e telefone de contato são obrigatórios!",
+									+ "O nome, cnpj, classificação, endereço e telefone de contato são obrigatórios!",
 							"Erro de processamento", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				
+
 				if (!DataBase.getConnection()) {
 					JOptionPane.showMessageDialog(this,
 							"Falha na conexão com o banco de dados!\nOperação não realizada.", "Exclusão de dados",
@@ -445,6 +452,19 @@ public class Listener extends JFrame implements ActionListener, ListSelectionLis
 				}
 			}
 		}
+	}
+
+	private boolean verifyDateFormat(String birth) {
+		if (birth.charAt(2) != '/' || birth.charAt(5) != '/' || birth.length() != 10)
+			return false;
+		try {
+			Integer.parseInt(birth.substring(0, 2));
+			Integer.parseInt(birth.substring(3, 5));
+			Integer.parseInt(birth.substring(7));
+		} catch (java.lang.NumberFormatException e) {
+			return false;
+		}
+		return true;
 	}
 
 	private void showInicialPanel() {
